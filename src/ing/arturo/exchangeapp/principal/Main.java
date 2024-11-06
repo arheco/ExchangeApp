@@ -1,23 +1,28 @@
 package ing.arturo.exchangeapp.principal;
 
 import ing.arturo.exchangeapp.modelos.MenuSelector;
+import ing.arturo.exchangeapp.modelos.Requester;
 import ing.arturo.exchangeapp.modelos.ValidaSalida;
+import ing.arturo.exchangeapp.operaciones.Operaciones;
 
 public class Main {
     public static void main(String[] args) {
 
         ValidaSalida salida = new ValidaSalida();
-
+        Operaciones operaciones = new Operaciones();
+        Requester uriPrincipal = new Requester();
         salida.setValidaSalida(false);
-        while (salida.isValidaSalida() == false) {
+
+
+        while (!salida.isValidaSalida()) {
             System.out.println("""
                 Menú principal\
                 
                  1. MXN -> USD           6. CAD -> MXN\
                 
-                 2. USD -> MXN           7. MXN -> ARG\
+                 2. USD -> MXN           7. MXN -> ARS\
                 
-                 3. MXN -> EUR           8. ARG -> MXN\
+                 3. MXN -> EUR           8. ARS -> MXN\
                 
                  4. EUR -> MXN           9. USD -> EUR\
                 
@@ -28,6 +33,13 @@ public class Main {
             switch (entrada.getOpcion()){
                 case 1:
                     System.out.println("Convertir MXN a USD");
+                    operaciones.setDivisaOrigen("MXN");
+                    operaciones.setDivisaSalida("ARS");
+                    String uriOrigen = String.valueOf(uriPrincipal.getResponse()).replace("XXX", operaciones.getDivisaOrigen());
+                    String uriSalida = String.valueOf(uriPrincipal.getResponse()).replace("XXX", operaciones.getDivisaSalida());
+                    System.out.println(uriOrigen);
+                    System.out.println(uriSalida);
+                    System.out.println();
                     break;
                 case 2:
                     System.out.println("Convertir USD a MXN");
