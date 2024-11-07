@@ -1,9 +1,9 @@
 package ing.arturo.exchangeapp.principal;
 
+import ing.arturo.exchangeapp.modelos.CreadorUriPair;
 import ing.arturo.exchangeapp.modelos.HttpService;
 import ing.arturo.exchangeapp.modelos.MenuSelector;
 import ing.arturo.exchangeapp.modelos.ValidaSalida;
-import ing.arturo.exchangeapp.operaciones.Operaciones;
 
 import java.io.IOException;
 
@@ -12,12 +12,10 @@ public class Main {
     public static void main(String[] args) {
 
         ValidaSalida salida = new ValidaSalida();
-        Operaciones operaciones = new Operaciones();
-        HttpService uriPrincipal = new HttpService();
         HttpService uriDivisaOrigen = new HttpService();
         HttpService uriDivisaDestino = new HttpService();
+        HttpService uriDivisaDoble = new HttpService();
         salida.setValidaSalida(false);
-
 
         try {
             while (!salida.isValidaSalida()) {
@@ -39,16 +37,27 @@ public class Main {
                 switch (entrada.getOpcion()) {
                     case 1:
                         System.out.println("Convertir MXN a USD");
-                        // Crea la URI para solicitar mediante API la divisa de origen,
+                        // Crea la URI para solicitar mediante API de la divisa individualmente,
                         uriDivisaOrigen.setUri("MXN");
-                        //System.out.println(uriDivisaOrigen.getUriOK());
-                        // Recibe la respuesta de la solicitud API
-                        String responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
-                        // Imprime en una linea la respuesta
-                        System.out.println(responseOrigen);
                         uriDivisaDestino.setUri("USD");
+
+                        // Crea la URI para solicitar meidante API la tasa de conversion.
+                        CreadorUriPair uriPair = new CreadorUriPair(uriDivisaOrigen.getUri(), uriDivisaDestino.getUri());
+
+                        // Recibe la respuesta de la solicitud API de la divisa individualmente
+                        String responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
                         String responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
-                        System.out.println(responseDestino);
+
+                        // Recibe la respuesta de la solicitud API de la tasa de conversión.
+                        String responseTasa = uriDivisaDoble.enviarGet(String.valueOf(uriPair));
+
+                        // Imprime la salida Json Ugly *******************
+                        // Remover al avance del proyecto*****************
+                        System.out.println("Tasa: " + responseTasa);
+                        System.out.println("Origen: " +responseOrigen);
+                        System.out.println("Destino: " +responseDestino);
+                        // Remover****************************************
+
                         break;
                     case 2:
                         System.out.println("Convertir USD a MXN");
