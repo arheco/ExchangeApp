@@ -1,8 +1,6 @@
 package ing.arturo.exchangeapp.principal;
 
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import ing.arturo.exchangeapp.modelos.*;
 
 import java.io.IOException;
@@ -16,9 +14,8 @@ public class Main {
         HttpService uriDivisaDestino = new HttpService();
         HttpService uriDivisaDoble = new HttpService();
         salida.setValidaSalida(false);
-        Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
-                .setPrettyPrinting().create();
-
+        //Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).setPrettyPrinting().create();
+        Gson gson = new Gson();
 
         try {
             while (!salida.isValidaSalida()) {
@@ -56,17 +53,19 @@ public class Main {
 
                         // Imprime la salida Json Ugly *******************
                         // Remover al avance del proyecto*****************
-                        System.out.println("Tasa: " + responseTasa);
-                        System.out.println("Origen: " + responseOrigen);
-                        System.out.println("Destino: " + responseDestino);
+                        //System.out.println("Tasa: " + responseTasa);
+                        //System.out.println("Origen: " + responseOrigen);
+                        //System.out.println(responseDestino);
                         // Remover****************************************
 
-                        DivisaApi divisaOrigen = gson.fromJson(responseOrigen, DivisaApi.class) ;
-                        DivisaApi divisaDestino = gson.fromJson(responseDestino, DivisaApi.class);
-                        ConversionAPI targetRate = gson.fromJson(responseTasa, ConversionAPI.class);
-                        System.out.println(divisaOrigen);
-                        System.out.println(divisaDestino);
-                        System.out.println(targetRate);
+                        //Convierte el Json(String) recibido y crea los objetos correspondientes.
+                        RespuestaAPI divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class) ;
+                        RespuestaAPI divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Muestra los resultados desde el json recibido.
+                        System.out.println("Divisa de Origen:" + divisaOrigen.getBase_code());
+                        System.out.println("Valor Divisa de Origen: " + divisaOrigen.getConversion_rates().getMxn());
+                        System.out.println(divisaDestino.getConversion_rates().getUsd());
                         Pausa.Pausa();
                         break;
                     case 2:
