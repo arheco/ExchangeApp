@@ -1,80 +1,93 @@
 package ing.arturo.exchangeapp.principal;
 
+import ing.arturo.exchangeapp.modelos.HttpService;
 import ing.arturo.exchangeapp.modelos.MenuSelector;
-import ing.arturo.exchangeapp.modelos.Requester;
 import ing.arturo.exchangeapp.modelos.ValidaSalida;
 import ing.arturo.exchangeapp.operaciones.Operaciones;
+
+import java.io.IOException;
+
 
 public class Main {
     public static void main(String[] args) {
 
         ValidaSalida salida = new ValidaSalida();
         Operaciones operaciones = new Operaciones();
-        Requester uriPrincipal = new Requester();
+        HttpService uriPrincipal = new HttpService();
+        HttpService uriDivisaOrigen = new HttpService();
+        HttpService uriDivisaDestino = new HttpService();
         salida.setValidaSalida(false);
 
 
-        while (!salida.isValidaSalida()) {
-            System.out.println("""
-                Menú principal\
-                
-                 1. MXN -> USD           6. CAD -> MXN\
-                
-                 2. USD -> MXN           7. MXN -> ARS\
-                
-                 3. MXN -> EUR           8. ARS -> MXN\
-                
-                 4. EUR -> MXN           9. USD -> EUR\
-                
-                 5. MXN -> CAD          10. EUR -> USD\
-                
-                 11. Salir del programa.\s""");
-            MenuSelector entrada = new MenuSelector();
-            switch (entrada.getOpcion()){
-                case 1:
-                    System.out.println("Convertir MXN a USD");
-                    operaciones.setDivisaOrigen("MXN");
-                    operaciones.setDivisaSalida("ARS");
-                    String uriOrigen = String.valueOf(uriPrincipal.getResponse()).replace("XXX", operaciones.getDivisaOrigen());
-                    String uriSalida = String.valueOf(uriPrincipal.getResponse()).replace("XXX", operaciones.getDivisaSalida());
-                    System.out.println(uriOrigen);
-                    System.out.println(uriSalida);
-                    System.out.println();
-                    break;
-                case 2:
-                    System.out.println("Convertir USD a MXN");
-                    break;
-                case 3:
-                    System.out.println("Convertir MXN a EUR");
-                    break;
-                case 4:
-                    System.out.println("Convertir EUR a MXN");
-                    break;
-                case 5:
-                    System.out.println("Convertir MXN a CAD");
-                    break;
-                case 6:
-                    System.out.println("Convertir CAD a MXN");
-                    break;
-                case 7:
-                    System.out.println("Convertir MXN a ARG");
-                    break;
-                case 8:
-                    System.out.println("Convertir ARG a MXN");
-                    break;
-                case 9:
-                    System.out.println("Convertir USD a EUR");
-                    break;
-                case 10:
-                    System.out.println("Convertir EUR a USD");
-                    break;
-                case 11:
-                    salida.setValidaSalida(true);
-                    System.out.println("Gracias por usar este programa.");
-                    break;
-                default:
-                    System.out.println("ERROR!!: Opción invalida, intente de nuevo");
+        try {
+            while (!salida.isValidaSalida()) {
+                System.out.println("""
+                        Menú principal\
+                        
+                         1. MXN -> USD           6. CAD -> MXN\
+                        
+                         2. USD -> MXN           7. MXN -> ARS\
+                        
+                         3. MXN -> EUR           8. ARS -> MXN\
+                        
+                         4. EUR -> MXN           9. USD -> EUR\
+                        
+                         5. MXN -> CAD          10. EUR -> USD\
+                        
+                         11. Salir del programa.\s""");
+                MenuSelector entrada = new MenuSelector();
+                switch (entrada.getOpcion()) {
+                    case 1:
+                        System.out.println("Convertir MXN a USD");
+                        // Crea la URI para solicitar mediante API la divisa de origen,
+                        uriDivisaOrigen.setUri("MXN");
+                        //System.out.println(uriDivisaOrigen.getUriOK());
+                        // Recibe la respuesta de la solicitud API
+                        String responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        // Imprime en una linea la respuesta
+                        System.out.println(responseOrigen);
+                        uriDivisaDestino.setUri("USD");
+                        String responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
+                        System.out.println(responseDestino);
+                        break;
+                    case 2:
+                        System.out.println("Convertir USD a MXN");
+                        break;
+                    case 3:
+                        System.out.println("Convertir MXN a EUR");
+                        break;
+                    case 4:
+                        System.out.println("Convertir EUR a MXN");
+                        break;
+                    case 5:
+                        System.out.println("Convertir MXN a CAD");
+                        break;
+                    case 6:
+                        System.out.println("Convertir CAD a MXN");
+                        break;
+                    case 7:
+                        System.out.println("Convertir MXN a ARG");
+                        break;
+                    case 8:
+                        System.out.println("Convertir ARG a MXN");
+                        break;
+                    case 9:
+                        System.out.println("Convertir USD a EUR");
+                        break;
+                    case 10:
+                        System.out.println("Convertir EUR a USD");
+                        break;
+                    case 11:
+                        salida.setValidaSalida(true);
+                        System.out.println("Gracias por usar este programa.");
+                        break;
+                    default:
+                        System.out.println("ERROR!!: Opción invalida, intente de nuevo");
+                }
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
+
 }
