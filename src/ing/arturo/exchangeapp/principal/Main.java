@@ -1,9 +1,9 @@
 package ing.arturo.exchangeapp.principal;
 
-import ing.arturo.exchangeapp.modelos.CreadorUriPair;
-import ing.arturo.exchangeapp.modelos.HttpService;
-import ing.arturo.exchangeapp.modelos.MenuSelector;
-import ing.arturo.exchangeapp.modelos.ValidaSalida;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import ing.arturo.exchangeapp.modelos.*;
 
 import java.io.IOException;
 
@@ -16,10 +16,13 @@ public class Main {
         HttpService uriDivisaDestino = new HttpService();
         HttpService uriDivisaDoble = new HttpService();
         salida.setValidaSalida(false);
+        Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+                .setPrettyPrinting().create();
+
 
         try {
             while (!salida.isValidaSalida()) {
-                System.out.println("""
+             ;   System.out.println("""
                         Menú principal\
                         
                          1. MXN -> USD           6. CAD -> MXN\
@@ -54,10 +57,17 @@ public class Main {
                         // Imprime la salida Json Ugly *******************
                         // Remover al avance del proyecto*****************
                         System.out.println("Tasa: " + responseTasa);
-                        System.out.println("Origen: " +responseOrigen);
-                        System.out.println("Destino: " +responseDestino);
+                        System.out.println("Origen: " + responseOrigen);
+                        System.out.println("Destino: " + responseDestino);
                         // Remover****************************************
 
+                        DivisaApi divisaOrigen = gson.fromJson(responseOrigen, DivisaApi.class) ;
+                        DivisaApi divisaDestino = gson.fromJson(responseDestino, DivisaApi.class);
+                        ConversionAPI targetRate = gson.fromJson(responseTasa, ConversionAPI.class);
+                        System.out.println(divisaOrigen);
+                        System.out.println(divisaDestino);
+                        System.out.println(targetRate);
+                        Pausa.Pausa();
                         break;
                     case 2:
                         System.out.println("Convertir USD a MXN");
