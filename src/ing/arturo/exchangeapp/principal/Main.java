@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import ing.arturo.exchangeapp.modelos.*;
 
 import java.io.IOException;
+import java.util.Scanner;
 
 
 public class Main {
@@ -12,14 +13,22 @@ public class Main {
         ValidaSalida salida = new ValidaSalida();
         HttpService uriDivisaOrigen = new HttpService();
         HttpService uriDivisaDestino = new HttpService();
-        HttpService uriDivisaDoble = new HttpService();
         salida.setValidaSalida(false);
-        //Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).setPrettyPrinting().create();
+        Scanner teclado = new Scanner(System.in);
         Gson gson = new Gson();
+        RespuestaAPI divisaOrigen;
+        RespuestaAPI divisaDestino;
+        double valorOrigenJson;
+        String actualizacionOrigenJson;
+        String codigoOrigenJson;
+        String responseOrigen;
+        String responseDestino;
+        double cantidadConvertir;
+        double cantidadFinal;
 
         try {
             while (!salida.isValidaSalida()) {
-             ;   System.out.println("""
+                System.out.println("""
                         Menú principal\
                         
                          1. MXN -> USD           6. CAD -> MXN\
@@ -37,63 +46,366 @@ public class Main {
                 switch (entrada.getOpcion()) {
                     case 1:
                         System.out.println("Convertir MXN a USD");
+
                         // Crea la URI para solicitar mediante API de la divisa individualmente,
                         uriDivisaOrigen.setUri("MXN");
                         uriDivisaDestino.setUri("USD");
 
-                        // Crea la URI para solicitar meidante API la tasa de conversion.
-                        CreadorUriPair uriPair = new CreadorUriPair(uriDivisaOrigen.getUri(), uriDivisaDestino.getUri());
-
                         // Recibe la respuesta de la solicitud API de la divisa individualmente
-                        String responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
-                        String responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
 
-                        // Recibe la respuesta de la solicitud API de la tasa de conversión.
-                        String responseTasa = uriDivisaDoble.enviarGet(String.valueOf(uriPair));
-
-                        // Imprime la salida Json Ugly *******************
-                        // Remover al avance del proyecto*****************
-                        //System.out.println("Tasa: " + responseTasa);
-                        //System.out.println("Origen: " + responseOrigen);
-                        //System.out.println(responseDestino);
-                        // Remover****************************************
+                        responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
 
                         //Convierte el Json(String) recibido y crea los objetos correspondientes.
-                        RespuestaAPI divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class) ;
-                        RespuestaAPI divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+                        divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class);
+                        divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Selecciona los valores correctos de la deserialización
+                        codigoOrigenJson = divisaOrigen.getBase_code();
+                        actualizacionOrigenJson = divisaOrigen.getTime_last_update_utc();
+                        valorOrigenJson = Double.parseDouble(divisaOrigen.getConversion_rates().getMxn());
+
 
                         // Muestra los resultados desde el json recibido.
-                        System.out.println("Divisa de Origen:" + divisaOrigen.getBase_code());
-                        System.out.println("Valor Divisa de Origen: " + divisaOrigen.getConversion_rates().getMxn());
-                        System.out.println(divisaDestino.getConversion_rates().getUsd());
+                        System.out.println("Divisa de Origen:" + codigoOrigenJson);
+                        System.out.println("Actualizado el: " + actualizacionOrigenJson);
+                        System.out.println("Valor actual de la divisa de Origen: " + valorOrigenJson);
+                        System.out.println("Valor actual de la divisa de destino: " + divisaDestino.getConversion_rates().getMxn());
+
+                        // Solicita el monto que se desea convertir.
+                        System.out.println("Ingresa la cantidad de " + divisaOrigen.getBase_code() + " que deseas convertir a " + divisaDestino.getBase_code() + ".");
+                        cantidadConvertir = teclado.nextDouble();
+
+                        // Realiza la operación de conversión
+                        cantidadFinal = cantidadConvertir / Double.parseDouble(divisaDestino.getConversion_rates().getMxn());
+                        System.out.println("La conversión es un total de: " + cantidadFinal + " " + divisaDestino.getBase_code());
                         Pausa.Pausa();
                         break;
                     case 2:
                         System.out.println("Convertir USD a MXN");
+                        // Crea la URI para solicitar mediante API de la divisa individualmente,
+                        uriDivisaOrigen.setUri("USD");
+                        uriDivisaDestino.setUri("MXN");
+
+                        // Recibe la respuesta de la solicitud API de la divisa individualmente
+
+                        responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
+
+                        //Convierte el Json(String) recibido y crea los objetos correspondientes.
+                        divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class);
+                        divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Selecciona los valores correctos de la deserialización
+                        codigoOrigenJson = divisaOrigen.getBase_code();
+                        actualizacionOrigenJson = divisaOrigen.getTime_last_update_utc();
+                        valorOrigenJson = Double.parseDouble(divisaOrigen.getConversion_rates().getUsd());
+
+
+                        // Muestra los resultados desde el json recibido.
+                        System.out.println("Divisa de Origen:" + codigoOrigenJson);
+                        System.out.println("Actualizado el: " + actualizacionOrigenJson);
+                        System.out.println("Valor actual de la divisa de Origen: " + valorOrigenJson);
+                        System.out.println("Valor actual de la divisa de destino: " + divisaDestino.getConversion_rates().getUsd());
+
+                        // Solicita el monto que se desea convertir.
+                        System.out.println("Ingresa la cantidad de " + divisaOrigen.getBase_code() + " que deseas convertir a " + divisaDestino.getBase_code() + ".");
+                        cantidadConvertir = teclado.nextDouble();
+
+                        // Realiza la operación de conversión
+                        cantidadFinal = cantidadConvertir / Double.parseDouble(divisaDestino.getConversion_rates().getUsd());
+                        System.out.println("La conversión es un total de: " + cantidadFinal + " " + divisaDestino.getBase_code());
+                        Pausa.Pausa();
                         break;
                     case 3:
                         System.out.println("Convertir MXN a EUR");
+                        // Crea la URI para solicitar mediante API de la divisa individualmente,
+                        uriDivisaOrigen.setUri("MXN");
+                        uriDivisaDestino.setUri("EUR");
+
+                        // Recibe la respuesta de la solicitud API de la divisa individualmente
+
+                        responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
+
+                        //Convierte el Json(String) recibido y crea los objetos correspondientes.
+                        divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class);
+                        divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Selecciona los valores correctos de la deserialización
+                        codigoOrigenJson = divisaOrigen.getBase_code();
+                        actualizacionOrigenJson = divisaOrigen.getTime_last_update_utc();
+                        valorOrigenJson = Double.parseDouble(divisaOrigen.getConversion_rates().getMxn());
+
+
+                        // Muestra los resultados desde el json recibido.
+                        System.out.println("Divisa de Origen:" + codigoOrigenJson);
+                        System.out.println("Actualizado el: " + actualizacionOrigenJson);
+                        System.out.println("Valor actual de la divisa de Origen: " + valorOrigenJson);
+                        System.out.println("Valor actual de la divisa de destino: " + divisaDestino.getConversion_rates().getMxn());
+
+                        // Solicita el monto que se desea convertir.
+                        System.out.println("Ingresa la cantidad de " + divisaOrigen.getBase_code() + " que deseas convertir a " + divisaDestino.getBase_code() + ".");
+                        cantidadConvertir = teclado.nextDouble();
+
+                        // Realiza la operación de conversión
+                        cantidadFinal = cantidadConvertir / Double.parseDouble(divisaDestino.getConversion_rates().getMxn());
+                        System.out.println("La conversión es un total de: " + cantidadFinal + " " + divisaDestino.getBase_code());
+                        Pausa.Pausa();
                         break;
                     case 4:
                         System.out.println("Convertir EUR a MXN");
+                        // Crea la URI para solicitar mediante API de la divisa individualmente,
+                        uriDivisaOrigen.setUri("EUR");
+                        uriDivisaDestino.setUri("MXN");
+
+                        // Recibe la respuesta de la solicitud API de la divisa individualmente
+
+                        responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
+
+                        //Convierte el Json(String) recibido y crea los objetos correspondientes.
+                        divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class);
+                        divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Selecciona los valores correctos de la deserialización
+                        codigoOrigenJson = divisaOrigen.getBase_code();
+                        actualizacionOrigenJson = divisaOrigen.getTime_last_update_utc();
+                        valorOrigenJson = Double.parseDouble(divisaOrigen.getConversion_rates().getEur());
+
+
+                        // Muestra los resultados desde el json recibido.
+                        System.out.println("Divisa de Origen:" + codigoOrigenJson);
+                        System.out.println("Actualizado el: " + actualizacionOrigenJson);
+                        System.out.println("Valor actual de la divisa de Origen: " + valorOrigenJson);
+                        System.out.println("Valor actual de la divisa de destino: " + divisaDestino.getConversion_rates().getEur());
+
+                        // Solicita el monto que se desea convertir.
+                        System.out.println("Ingresa la cantidad de " + divisaOrigen.getBase_code() + " que deseas convertir a " + divisaDestino.getBase_code() + ".");
+                        cantidadConvertir = teclado.nextDouble();
+
+                        // Realiza la operación de conversión
+                        cantidadFinal = cantidadConvertir / Double.parseDouble(divisaDestino.getConversion_rates().getEur());
+                        System.out.println("La conversión es un total de: " + cantidadFinal + " " + divisaDestino.getBase_code());
+                        Pausa.Pausa();
                         break;
                     case 5:
                         System.out.println("Convertir MXN a CAD");
+                        // Crea la URI para solicitar mediante API de la divisa individualmente,
+                        uriDivisaOrigen.setUri("MXN");
+                        uriDivisaDestino.setUri("CAD");
+
+                        // Recibe la respuesta de la solicitud API de la divisa individualmente
+
+                        responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
+
+                        //Convierte el Json(String) recibido y crea los objetos correspondientes.
+                        divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class);
+                        divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Selecciona los valores correctos de la deserialización
+                        codigoOrigenJson = divisaOrigen.getBase_code();
+                        actualizacionOrigenJson = divisaOrigen.getTime_last_update_utc();
+                        valorOrigenJson = Double.parseDouble(divisaOrigen.getConversion_rates().getCad());
+
+
+                        // Muestra los resultados desde el json recibido.
+                        System.out.println("Divisa de Origen:" + codigoOrigenJson);
+                        System.out.println("Actualizado el: " + actualizacionOrigenJson);
+                        System.out.println("Valor actual de la divisa de Origen: " + valorOrigenJson);
+                        System.out.println("Valor actual de la divisa de destino: " + divisaDestino.getConversion_rates().getCad());
+
+                        // Solicita el monto que se desea convertir.
+                        System.out.println("Ingresa la cantidad de " + divisaOrigen.getBase_code() + " que deseas convertir a " + divisaDestino.getBase_code() + ".");
+                        cantidadConvertir = teclado.nextDouble();
+
+                        // Realiza la operación de conversión
+                        cantidadFinal = cantidadConvertir / Double.parseDouble(divisaDestino.getConversion_rates().getCad());
+                        System.out.println("La conversión es un total de: " + cantidadFinal + " " + divisaDestino.getBase_code());
+                        Pausa.Pausa();
+
                         break;
                     case 6:
                         System.out.println("Convertir CAD a MXN");
+                        // Crea la URI para solicitar mediante API de la divisa individualmente,
+                        uriDivisaOrigen.setUri("CAD");
+                        uriDivisaDestino.setUri("MXN");
+
+                        // Recibe la respuesta de la solicitud API de la divisa individualmente
+
+                        responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
+
+                        //Convierte el Json(String) recibido y crea los objetos correspondientes.
+                        divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class);
+                        divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Selecciona los valores correctos de la deserialización
+                        codigoOrigenJson = divisaOrigen.getBase_code();
+                        actualizacionOrigenJson = divisaOrigen.getTime_last_update_utc();
+                        valorOrigenJson = Double.parseDouble(divisaOrigen.getConversion_rates().getMxn());
+
+
+                        // Muestra los resultados desde el json recibido.
+                        System.out.println("Divisa de Origen:" + codigoOrigenJson);
+                        System.out.println("Actualizado el: " + actualizacionOrigenJson);
+                        System.out.println("Valor actual de la divisa de Origen: " + valorOrigenJson);
+                        System.out.println("Valor actual de la divisa de destino: " + divisaDestino.getConversion_rates().getMxn());
+
+                        // Solicita el monto que se desea convertir.
+                        System.out.println("Ingresa la cantidad de " + divisaOrigen.getBase_code() + " que deseas convertir a " + divisaDestino.getBase_code() + ".");
+                        cantidadConvertir = teclado.nextDouble();
+
+                        // Realiza la operación de conversión
+                        cantidadFinal = cantidadConvertir / Double.parseDouble(divisaDestino.getConversion_rates().getMxn());
+                        System.out.println("La conversión es un total de: " + cantidadFinal + " " + divisaDestino.getBase_code());
+                        Pausa.Pausa();
                         break;
                     case 7:
                         System.out.println("Convertir MXN a ARG");
+                        // Crea la URI para solicitar mediante API de la divisa individualmente,
+                        uriDivisaOrigen.setUri("MXN");
+                        uriDivisaDestino.setUri("ARS");
+
+                        // Recibe la respuesta de la solicitud API de la divisa individualmente
+
+                        responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
+
+                        //Convierte el Json(String) recibido y crea los objetos correspondientes.
+                        divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class);
+                        divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Selecciona los valores correctos de la deserialización
+                        codigoOrigenJson = divisaOrigen.getBase_code();
+                        actualizacionOrigenJson = divisaOrigen.getTime_last_update_utc();
+                        valorOrigenJson = Double.parseDouble(divisaOrigen.getConversion_rates().getMxn());
+
+
+                        // Muestra los resultados desde el json recibido.
+                        System.out.println("Divisa de Origen:" + codigoOrigenJson);
+                        System.out.println("Actualizado el: " + actualizacionOrigenJson);
+                        System.out.println("Valor actual de la divisa de Origen: " + valorOrigenJson);
+                        System.out.println("Valor actual de la divisa de destino: " + divisaDestino.getConversion_rates().getMxn());
+
+                        // Solicita el monto que se desea convertir.
+                        System.out.println("Ingresa la cantidad de " + divisaOrigen.getBase_code() + " que deseas convertir a " + divisaDestino.getBase_code() + ".");
+                        cantidadConvertir = teclado.nextDouble();
+
+                        // Realiza la operación de conversión
+                        cantidadFinal = cantidadConvertir / Double.parseDouble(divisaDestino.getConversion_rates().getMxn());
+                        System.out.println("La conversión es un total de: " + cantidadFinal + " " + divisaDestino.getBase_code());
+                        Pausa.Pausa();
+
                         break;
                     case 8:
                         System.out.println("Convertir ARG a MXN");
+                        // Crea la URI para solicitar mediante API de la divisa individualmente,
+                        uriDivisaOrigen.setUri("ARS");
+                        uriDivisaDestino.setUri("MXN");
+
+                        // Recibe la respuesta de la solicitud API de la divisa individualmente
+
+                        responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
+
+                        //Convierte el Json(String) recibido y crea los objetos correspondientes.
+                        divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class);
+                        divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Selecciona los valores correctos de la deserialización
+                        codigoOrigenJson = divisaOrigen.getBase_code();
+                        actualizacionOrigenJson = divisaOrigen.getTime_last_update_utc();
+                        valorOrigenJson = Double.parseDouble(divisaOrigen.getConversion_rates().getArs());
+
+
+                        // Muestra los resultados desde el json recibido.
+                        System.out.println("Divisa de Origen:" + codigoOrigenJson);
+                        System.out.println("Actualizado el: " + actualizacionOrigenJson);
+                        System.out.println("Valor actual de la divisa de Origen: " + valorOrigenJson);
+                        System.out.println("Valor actual de la divisa de destino: " + divisaDestino.getConversion_rates().getArs());
+
+                        // Solicita el monto que se desea convertir.
+                        System.out.println("Ingresa la cantidad de " + divisaOrigen.getBase_code() + " que deseas convertir a " + divisaDestino.getBase_code() + ".");
+                        cantidadConvertir = teclado.nextDouble();
+
+                        // Realiza la operación de conversión
+                        cantidadFinal = cantidadConvertir / Double.parseDouble(divisaDestino.getConversion_rates().getArs());
+                        System.out.println("La conversión es un total de: " + cantidadFinal + " " + divisaDestino.getBase_code());
+                        Pausa.Pausa();
                         break;
                     case 9:
                         System.out.println("Convertir USD a EUR");
+                        // Crea la URI para solicitar mediante API de la divisa individualmente,
+                        uriDivisaOrigen.setUri("USD");
+                        uriDivisaDestino.setUri("EUR");
+
+                        // Recibe la respuesta de la solicitud API de la divisa individualmente
+
+                        responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
+
+                        //Convierte el Json(String) recibido y crea los objetos correspondientes.
+                        divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class);
+                        divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Selecciona los valores correctos de la deserialización
+                        codigoOrigenJson = divisaOrigen.getBase_code();
+                        actualizacionOrigenJson = divisaOrigen.getTime_last_update_utc();
+                        valorOrigenJson = Double.parseDouble(divisaOrigen.getConversion_rates().getUsd());
+
+
+                        // Muestra los resultados desde el json recibido.
+                        System.out.println("Divisa de Origen:" + codigoOrigenJson);
+                        System.out.println("Actualizado el: " + actualizacionOrigenJson);
+                        System.out.println("Valor actual de la divisa de Origen: " + valorOrigenJson);
+                        System.out.println("Valor actual de la divisa de destino: " + divisaDestino.getConversion_rates().getUsd());
+
+                        // Solicita el monto que se desea convertir.
+                        System.out.println("Ingresa la cantidad de " + divisaOrigen.getBase_code() + " que deseas convertir a " + divisaDestino.getBase_code() + ".");
+                        cantidadConvertir = teclado.nextDouble();
+
+                        // Realiza la operación de conversión
+                        cantidadFinal = cantidadConvertir / Double.parseDouble(divisaDestino.getConversion_rates().getUsd());
+                        System.out.println("La conversión es un total de: " + cantidadFinal + " " + divisaDestino.getBase_code());
+                        Pausa.Pausa();
                         break;
                     case 10:
                         System.out.println("Convertir EUR a USD");
+                        // Crea la URI para solicitar mediante API de la divisa individualmente,
+                        uriDivisaOrigen.setUri("EUR");
+                        uriDivisaDestino.setUri("USD");
+
+                        // Recibe la respuesta de la solicitud API de la divisa individualmente
+
+                        responseOrigen = uriDivisaOrigen.enviarGet(uriDivisaOrigen.getUriOK());
+                        responseDestino = uriDivisaDestino.enviarGet((uriDivisaDestino.getUriOK()));
+
+                        //Convierte el Json(String) recibido y crea los objetos correspondientes.
+                        divisaOrigen = gson.fromJson(responseOrigen, RespuestaAPI.class);
+                        divisaDestino = gson.fromJson(responseDestino, RespuestaAPI.class);
+
+                        // Selecciona los valores correctos de la deserialización
+                        codigoOrigenJson = divisaOrigen.getBase_code();
+                        actualizacionOrigenJson = divisaOrigen.getTime_last_update_utc();
+                        valorOrigenJson = Double.parseDouble(divisaOrigen.getConversion_rates().getEur());
+
+
+                        // Muestra los resultados desde el json recibido.
+                        System.out.println("Divisa de Origen:" + codigoOrigenJson);
+                        System.out.println("Actualizado el: " + actualizacionOrigenJson);
+                        System.out.println("Valor actual de la divisa de Origen: " + valorOrigenJson);
+                        System.out.println("Valor actual de la divisa de destino: " + divisaDestino.getConversion_rates().getEur());
+
+                        // Solicita el monto que se desea convertir.
+                        System.out.println("Ingresa la cantidad de " + divisaOrigen.getBase_code() + " que deseas convertir a " + divisaDestino.getBase_code() + ".");
+                        cantidadConvertir = teclado.nextDouble();
+
+                        // Realiza la operación de conversión
+                        cantidadFinal = cantidadConvertir / Double.parseDouble(divisaDestino.getConversion_rates().getEur());
+                        System.out.println("La conversión es un total de: " + cantidadFinal + " " + divisaDestino.getBase_code());
+                        Pausa.Pausa();
                         break;
                     case 11:
                         salida.setValidaSalida(true);

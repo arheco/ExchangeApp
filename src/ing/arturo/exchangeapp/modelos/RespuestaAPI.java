@@ -2,7 +2,7 @@ package ing.arturo.exchangeapp.modelos;
 
 public class RespuestaAPI {
     private String result;
-    private String time_last_update;
+    private String time_last_update_utc;
     private String base_code;
     private ConversionRates conversion_rates;
 
@@ -14,12 +14,12 @@ public class RespuestaAPI {
         this.result = result;
     }
 
-    public String getTime_last_update() {
-        return time_last_update;
+    public String getTime_last_update_utc() {
+        return time_last_update_utc;
     }
 
-    public void setTime_last_update(String time_last_update) {
-        this.time_last_update = time_last_update;
+    public void setTime_last_update_utc(String time_last_update_utc) {
+        this.time_last_update_utc = time_last_update_utc;
     }
 
     public String getBase_code() {

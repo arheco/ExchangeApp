@@ -5,9 +5,13 @@ import com.google.gson.annotations.SerializedName;
 public class ConversionRates {
     @SerializedName("MXN")
     private String mxn;
+    @SerializedName("USD")
     private String usd;
+    @SerializedName("ARS")
     private String ars;
+    @SerializedName("CAD")
     private String cad;
+    @SerializedName("EUR")
     private String eur;
 
     public String getMxn() {
